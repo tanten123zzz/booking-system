@@ -11,5 +11,5 @@ esbuild.build({
   target: 'node20',
   outfile: 'dist/server.cjs',
   format: 'cjs',
-  external: ['express', 'vite', 'twilio', 'firebase-admin'],
+  external: ['express', 'vite', 'twilio', 'firebase-admin', '@prisma/client'],
 }).catch(() => process.exit(1));
