@@ -17,7 +17,7 @@ dotenv.config();
 // Triggering restart to apply JWT auth logic
 
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 
 async function startServer() {
   const app = express();
