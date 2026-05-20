@@ -1,0 +1,228 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// ------------------------------------------------------
+// SUPER ADMIN & TENANT MANAGEMENT
+// ------------------------------------------------------
+
+model Tenant {
+  id               String   @id @default(uuid())
+  name             String
+  adminEmail       String   @unique
+  password         String   // Hashed password
+  slug             String   @unique // Dùng cho booking url, VD: vici-checkin
+  brandColor       String   @default("#d97782") // Màu thương hiệu, ảnh hưởng nút bấm frontend
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  status           String   @default("ACTIVE") // ACTIVE, SUSPENDED
+  location         String?
+  phone            String?
+  logoUrl          String?
+  paymentMethods   String   @default("[\"Pay in Store\"]") // JSON string array
+  workingHours     String?  // JSON string for salon hours
+
+  // Relations
+  services         Service[]
+  staff            Staff[]
+  customers        Customer[]
+  bookings         Booking[]
+  promotions       Promotion[]
+  workShifts       WorkShift[]
+  timeOffs         TimeOff[]
+  
+  twilioConfig     TwilioConfig?
+  smsTemplates     SmsTemplate[]
+  socialConfig     SocialConfig?
+  messages         MessageHistory[]
+}
+
+model TwilioConfig {
+  id              String   @id @default(uuid())
+  accountSid      String
+  authToken       String
+  fromPhoneNumber String
+  
+  isGlobal        Boolean  @default(false) // Nếu true, áp dụng cho tất cả Tenant không có cấu hình riêng
+  tenantId        String?  @unique
+  tenant          Tenant?  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+}
+
+model SmsTemplate {
+  id        String   @id @default(uuid())
+  type      String   // PENDING, APPROVED, REJECTED
+  content   String
+  
+  isGlobal  Boolean  @default(false)
+  tenantId  String?
+  tenant    Tenant?  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, type])
+}
+
+// ------------------------------------------------------
+// TENANT DATA (Dịch vụ, Nhân viên, Khách hàng, Lịch hẹn)
+// ------------------------------------------------------
+
+model Service {
+  id          String   @id @default(uuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  name        String
+  category    String   // General, Waxing, Add-on Services, Nails, Pedicure, Manicure
+  duration    Int      // Phút (VD: 45, 60, 90)
+  price       Float    // Giá ($)
+  
+  bookings    Booking[]
+  staff       StaffService[]
+}
+
+model Staff {
+  id          String   @id @default(uuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  name        String
+  role        String   // Staff, Stylist
+  phone       String?
+  status      String   @default("ACTIVE") // ACTIVE, INACTIVE
+
+  bookings    Booking[]
+  services    StaffService[]
+  workShifts  WorkShift[]
+  timeOffs    TimeOff[]
+}
+
+model Customer {
+  id          String   @id @default(uuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  fullName    String
+  phone       String
+  email       String?
+  psid        String?  // Facebook Page Scoped ID
+  avatarUrl   String?  // Facebook Profile Picture URL
+  points      Int      @default(0)
+  tier        String   @default("Thường")
+  visits      Int      @default(0)
+  lastVisit   DateTime?
+  
+  bookings    Booking[]
+
+  @@unique([tenantId, phone])
+  @@index([psid])
+}
+
+model Booking {
+  id          String   @id @default(uuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  customerId  String
+  customer    Customer @relation(fields: [customerId], references: [id])
+  
+  serviceId   String
+  service     Service  @relation(fields: [serviceId], references: [id])
+  
+  staffId     String?
+  staff       Staff?   @relation(fields: [staffId], references: [id])
+  
+  dateTime    DateTime
+  status      String   @default("PENDING") // PENDING, APPROVED, REJECTED, COMPLETED, CANCELLED
+  
+  createdAt   DateTime @default(now())
+}
+
+model Promotion {
+  id          String   @id @default(uuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  name        String
+  code        String
+  discount    Float    // Phần trăm hoặc số tiền
+  startDate   DateTime
+  endDate     DateTime
+  isActive    Boolean  @default(true)
+}
+
+model StaffService {
+  id        String   @id @default(uuid())
+  
+  staffId   String
+  staff     Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  
+  serviceId String
+  service   Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([staffId, serviceId])
+}
+
+model WorkShift {
+  id        String   @id @default(uuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  staffId   String
+  staff     Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  
+  dayOfWeek Int      // 0 = Sunday, 1 = Monday, 2 = Tuesday, etc.
+  startTime String?  // "09:00"
+  endTime   String?  // "18:00"
+  isOff     Boolean  @default(false)
+
+  @@unique([staffId, dayOfWeek])
+}
+
+model TimeOff {
+  id        String   @id @default(uuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  staffId   String
+  staff     Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  
+  date      DateTime // Ngày xin nghỉ cụ thể
+  reason    String?  // Lý do nghỉ
+
+  @@unique([staffId, date])
+}
+
+model SocialConfig {
+  id              String   @id @default(uuid())
+  tenantId        String   @unique
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  pageId          String   @unique // Facebook Page ID
+  pageAccessToken String   // Facebook Page Access Token
+  verifyToken     String   @default("salon_booking_verify_token")
+  igAccountId     String?  // Instagram Business Account ID (linked to the FB Page)
+  
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model MessageHistory {
+  id          String   @id @default(uuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  psid        String   // Facebook Page Scoped ID or Instagram-Scoped ID of the customer
+  senderId    String   // Who sent the message (Page ID or PSID)
+  recipientId String   // Who received the message
+  content     String
+  mid         String?  @unique // Facebook/Instagram Message ID
+  direction   String   // INBOUND (from customer), OUTBOUND (from owner/bot)
+  platform    String   @default("facebook") // Source platform: 'facebook' | 'instagram'
+  
+  timestamp   DateTime @default(now())
+}
+
