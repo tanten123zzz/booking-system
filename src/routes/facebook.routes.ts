@@ -492,19 +492,30 @@ RULES:
         take: 10
       });
       
-      // Build conversation context (oldest first)
-      const conversationContents = recentHistory
-        .reverse()
-        .map(msg => ({
-          role: msg.direction === 'INBOUND' ? 'user' : 'model',
-          parts: [{ text: msg.content }]
-        }));
-      
+      // Build conversation context (oldest first) and MERGE consecutive roles
+      // Gemini API strictly requires alternating 'user' and 'model' roles
+      const rawRoles = recentHistory.reverse().map(msg => ({
+        role: msg.direction === 'INBOUND' ? 'user' : 'model',
+        text: msg.content
+      }));
+
       // Add the current new message
-      conversationContents.push({
-        role: 'user',
-        parts: [{ text }]
-      });
+      rawRoles.push({ role: 'user', text });
+
+      const conversationContents: any[] = [];
+      for (const msg of rawRoles) {
+        const lastConv = conversationContents[conversationContents.length - 1];
+        if (lastConv && lastConv.role === msg.role) {
+          // Merge with previous if same role
+          lastConv.parts[0].text += `\n${msg.text}`;
+        } else {
+          // Add new role block
+          conversationContents.push({
+            role: msg.role,
+            parts: [{ text: msg.text }]
+          });
+        }
+      }
 
       // 4. Request Gemini API with proper systemInstruction and generationConfig
       const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
