@@ -461,8 +461,12 @@ async function handleAutoReply(tenant: any, psid: string, text: string, accessTo
       if (tenant.workingHours) {
         try {
           const hours = JSON.parse(tenant.workingHours);
+          const dayMap: any = { mon: 'Monday', tue: 'Tuesday', wed: 'Wednesday', thu: 'Thursday', fri: 'Friday', sat: 'Saturday', sun: 'Sunday' };
           formattedHours = Object.entries(hours)
-            .map(([day, time]: any) => `${day}: ${time.start} - ${time.end}`)
+            .map(([day, time]: any) => {
+              if (!time.isOpen) return `${dayMap[day] || day}: Closed`;
+              return `${dayMap[day] || day}: ${time.openTime} - ${time.closeTime}`;
+            })
             .join('\n');
         } catch (e) {}
       }
