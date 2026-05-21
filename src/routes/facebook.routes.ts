@@ -532,7 +532,7 @@ RULES:
           contents: conversationContents,
           generationConfig: {
             temperature: 0.3,
-            maxOutputTokens: 500,
+            maxOutputTokens: 2000,
             topP: 0.8
           }
         },
