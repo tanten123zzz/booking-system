@@ -1,6 +1,6 @@
 import { useAppContext } from "../../context/AppContext";
 import { Check, X, Search, Calendar as CalendarIcon, User as UserIcon, Phone as PhoneIcon, Plus } from "lucide-react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 export function OwnerBookingsPage() {
   const { services, tenantSettings, currentUser, addBooking, customers, addCustomer } = useAppContext();

@@ -204,9 +204,9 @@ const mockServices: Service[] = [
 ];
 
 const mockStaff: Staff[] = [
-  { id: 1, tenantId: "t1", name: "Sarah", role: "Stylist", phone: "(555) 123-4567", dayOff: "None", workHours: {...defaultWorkHours}, status: "ACTIVE" },
-  { id: 2, tenantId: "t1", name: "Michael", role: "Staff", phone: "(555) 987-6543", dayOff: "None", workHours: {...defaultWorkHours}, status: "ACTIVE" },
-  { id: 3, tenantId: "t2", name: "David", role: "Stylist", phone: "(555) 555-5555", dayOff: "Monday", workHours: {...defaultWorkHours, mon: 'Off'}, status: "ACTIVE" },
+  { id: "1", tenantId: "t1", name: "Sarah", role: "Stylist", phone: "(555) 123-4567", dayOff: "None", workHours: {...defaultWorkHours}, status: "ACTIVE" },
+  { id: "2", tenantId: "t1", name: "Michael", role: "Staff", phone: "(555) 987-6543", dayOff: "None", workHours: {...defaultWorkHours}, status: "ACTIVE" },
+  { id: "3", tenantId: "t2", name: "David", role: "Stylist", phone: "(555) 555-5555", dayOff: "Monday", workHours: {...defaultWorkHours, mon: 'Off'}, status: "ACTIVE" },
 ];
 
 const mockCustomers: Customer[] = [
@@ -222,9 +222,9 @@ const mockBookings: Booking[] = [
 ];
 
 const mockTenants: Tenant[] = [
-  { id: "t1", name: "Topzone Coporation", slug: "topzone", adminEmail: "itl@topzone.com", createdDate: "4/23/2026", status: "Active", themeColor: "#384fff", location: "N/A", phone: "N/A", paymentMethods: ["Pay in Store"] },
-  { id: "t2", name: "Topzone Checkin Salon", slug: "topzone-checkin", adminEmail: "owner@topzonecheckin.com", createdDate: "4/22/2026", status: "Active", themeColor: "#384fff", location: "123 Beauty St", phone: "(555) 123-4567", paymentMethods: ["Pay in Store", "Credit Card"] },
-  { id: "t3", name: "Nail Beauty", slug: "nail-beauty", adminEmail: "ittopzone@topzonemarketing.com", createdDate: "4/30/2026", status: "Active", themeColor: "#ec4899", location: "456 Nail Ave", phone: "(555) 987-6543", paymentMethods: ["Pay in Store"] },
+  { id: "t1", name: "Topzone Coporation", slug: "topzone", adminEmail: "itl@topzone.com", createdDate: "4/23/2026", status: "Active", brandColor: "#384fff", location: "N/A", phone: "N/A", paymentMethods: ["Pay in Store"] },
+  { id: "t2", name: "Topzone Checkin Salon", slug: "topzone-checkin", adminEmail: "owner@topzonecheckin.com", createdDate: "4/22/2026", status: "Active", brandColor: "#384fff", location: "123 Beauty St", phone: "(555) 123-4567", paymentMethods: ["Pay in Store", "Credit Card"] },
+  { id: "t3", name: "Nail Beauty", slug: "nail-beauty", adminEmail: "ittopzone@topzonemarketing.com", createdDate: "4/30/2026", status: "Active", brandColor: "#ec4899", location: "456 Nail Ave", phone: "(555) 987-6543", paymentMethods: ["Pay in Store"] },
 ];
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
