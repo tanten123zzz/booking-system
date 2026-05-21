@@ -467,50 +467,70 @@ async function handleAutoReply(tenant: any, psid: string, text: string, accessTo
         } catch (e) {}
       }
 
-      // 2. Build personalized System Prompt Context
-      const systemPrompt = `You are a helpful, professional, and friendly AI receptionist for "${tenant.name}" nail salon.
-Our Services & Prices:
-${services.map(s => `- ${s.name}: $${s.price}`).join('\n')}
+      // 2. Build personalized System Prompt
+      const systemPrompt = `You are the receptionist at "${tenant.name}" nail salon. You respond via ${platform === 'instagram' ? 'Instagram DM' : 'Facebook Messenger'}.
 
-Our Professional Staff / Technicians:
-${staff.map(st => `- ${st.name} (${st.role})`).join('\n')}
+SALON DATA:
+Services: ${services.map(s => `${s.name} ($${s.price})`).join(', ')}
+Staff: ${staff.map(st => `${st.name} - ${st.role}`).join(', ')}
+Hours: ${formattedHours}
+Booking: ${bookingUrl}
 
-Our Working Hours:
-${formattedHours}
+RULES:
+- Be warm, concise (2-4 sentences max). Sound like a real receptionist, NOT an AI.
+- Answer ONLY about our salon: services, prices, hours, staff, booking.
+- If the customer asks about promotions or things not in our data, warmly invite them to leave their phone number for a personal callback.
+- To book: always share the link ${bookingUrl}
+- Match the customer's language (Vietnamese → Vietnamese, English → English).
+- Do NOT repeat the full price list unless specifically asked. Just answer the specific question.
+- Do NOT introduce yourself or the salon unless it's the very first message in the conversation.`;
 
-Online Booking Link: ${bookingUrl}
+      // 3. Fetch recent conversation history for context (last 10 messages)
+      const recentHistory = await prisma.messageHistory.findMany({
+        where: { tenantId: tenant.id, psid },
+        orderBy: { timestamp: 'desc' },
+        take: 10
+      });
+      
+      // Build conversation context (oldest first)
+      const conversationContents = recentHistory
+        .reverse()
+        .map(msg => ({
+          role: msg.direction === 'INBOUND' ? 'user' : 'model',
+          parts: [{ text: msg.content }]
+        }));
+      
+      // Add the current new message
+      conversationContents.push({
+        role: 'user',
+        parts: [{ text }]
+      });
 
-Rules for premium, human-like communication:
-1. Always sound like a warm, polite, and caring real-life salon receptionist. NEVER say things like "I am an AI", "I am a computer program", or "I only have information about...".
-2. If a customer asks about something NOT in our database (like current promotions, custom discounts, or complex requests):
-   - Respond with extreme warmth and politeness (e.g. "Dạ hiện tại chương trình ưu đãi lớn chưa được cập nhật chính thức trên hệ thống...").
-   - Invite them to leave their name and phone number so that the salon manager/technician can contact them directly to consult and offer exclusive deals ("Bạn có thể để lại số điện thoại để bên mình alo tư vấn trực tiếp các ưu đãi hấp dẫn dành riêng cho bạn nhé!").
-3. Answer customer questions naturally, concisely, and beautifully using our services, prices, technicians, and working hours.
-4. If a customer wants to book an appointment, always guide them warmly to click the booking link: ${bookingUrl}
-5. Always respond in the exact same language as the customer's message (e.g. reply in Vietnamese if they ask in Vietnamese).`;
-
-      // 3. Request Gemini API (gemini-2.5-flash) via clean HTTPS POST
+      // 4. Request Gemini API with proper systemInstruction and generationConfig
       const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiKey}`;
       const geminiRes = await axios.post(
         geminiUrl,
         {
-          contents: [
-            {
-              role: 'user',
-              parts: [{ text: `System Instruction:\n${systemPrompt}\n\nCustomer Message: ${text}` }]
-            }
-          ]
+          systemInstruction: {
+            parts: [{ text: systemPrompt }]
+          },
+          contents: conversationContents,
+          generationConfig: {
+            temperature: 0.3,
+            maxOutputTokens: 500,
+            topP: 0.8
+          }
         },
-        { timeout: 8000 }
+        { timeout: 10000 }
       );
 
       const aiReply = geminiRes.data?.candidates?.[0]?.content?.parts?.[0]?.text;
       if (aiReply) {
         reply = aiReply.trim();
-        console.log(`[AI Chatbot] Successfully generated AI response.`);
+        console.log(`[AI Chatbot] Successfully generated AI response (${reply.length} chars).`);
       }
     } catch (aiErr: any) {
-      console.error('[AI Chatbot Error]', aiErr.message);
+      console.error('[AI Chatbot Error]', aiErr.response?.data || aiErr.message);
       // Fail-safe: Fallback to keyword matching if AI fails
     }
   }
