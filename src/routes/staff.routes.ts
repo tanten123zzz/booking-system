@@ -47,6 +47,15 @@ router.post('/', requireAuth, async (req, res) => {
   try {
     const { name, role, phone, status, serviceIds, workShifts, timeOffs } = req.body;
     
+    // Fallback: If no services are provided, associate staff with all tenant's services
+    let finalServiceIds = serviceIds;
+    if (!finalServiceIds || finalServiceIds.length === 0) {
+      const tenantServices = await prisma.service.findMany({
+        where: { tenantId: req.tenantId as string }
+      });
+      finalServiceIds = tenantServices.map(s => s.id);
+    }
+
     const staff = await prisma.staff.create({
       data: {
         name,
@@ -55,7 +64,7 @@ router.post('/', requireAuth, async (req, res) => {
         status,
         tenantId: req.tenantId as string,
         services: {
-          create: (serviceIds || []).map((id: string) => ({
+          create: (finalServiceIds || []).map((id: string) => ({
             service: { connect: { id } }
           }))
         },
