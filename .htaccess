@@ -2,4 +2,4 @@ Options -Indexes
 RewriteEngine On
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ http://127.0.0.1:49201/ [P,L]
+RewriteRule ^(.*)$ http://127.0.0.1:49201/$1 [P,L]
