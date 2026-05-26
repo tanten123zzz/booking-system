@@ -23328,7 +23328,7 @@ async function handleAutoReply(tenant, psid, text, accessToken, platform = "face
       console.log(`[AI Chatbot] Initiating Gemini AI analysis for tenant: "${tenant.name}"`);
       const services = await prisma.service.findMany({ where: { tenantId: tenant.id } });
       const staff = await prisma.staff.findMany({ where: { tenantId: tenant.id, status: "ACTIVE" } });
-      const bookingUrl = `${process.env.APP_URL || "https://booking.salon"}/${tenant.slug}`;
+      const bookingUrl = process.env.APP_URL ? `${process.env.APP_URL}/${tenant.slug}` : `https://nbooking.topzonemarketing.com/${tenant.slug}`;
       let formattedHours = "Ch\xFAng t\xF4i m\u1EDF c\u1EEDa t\u1EEB 9:00 AM \u0111\u1EBFn 7:00 PM h\xE0ng ng\xE0y.";
       if (tenant.workingHours) {
         try {

@@ -455,7 +455,9 @@ async function handleAutoReply(tenant: any, psid: string, text: string, accessTo
       // 1. Fetch live Services & Working Hours from Database
       const services = await prisma.service.findMany({ where: { tenantId: tenant.id } });
       const staff = await prisma.staff.findMany({ where: { tenantId: tenant.id, status: 'ACTIVE' } });
-      const bookingUrl = `${process.env.APP_URL || 'https://booking.salon'}/${tenant.slug}`;
+      const bookingUrl = process.env.APP_URL 
+        ? `${process.env.APP_URL}/${tenant.slug}`
+        : `https://nbooking.topzonemarketing.com/${tenant.slug}`;
       
       let formattedHours = 'Chúng tôi mở cửa từ 9:00 AM đến 7:00 PM hàng ngày.';
       if (tenant.workingHours) {
