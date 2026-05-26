@@ -20,7 +20,7 @@ if [ "$LOCAL" != "$REMOTE" ] || [ "$PORT_ACTIVE" = "no" ]; then
     git pull origin main
     
     # Start server
-    nohup /home/u946594821/.nvm/versions/node/v20.20.2/bin/node dist/server.cjs > output.log 2>&1 &
+    NODE_ENV=production nohup /home/u946594821/.nvm/versions/node/v20.20.2/bin/node dist/server.cjs > output.log 2>&1 &
 else
     echo "$(date): Server is running fine. No updates." >> /home/u946594821/cron.log
 fi

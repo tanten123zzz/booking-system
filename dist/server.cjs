@@ -18049,6 +18049,13 @@ router3.get("/:id", async (req, res) => {
 router3.post("/", requireAuth, async (req, res) => {
   try {
     const { name, role, phone, status, serviceIds, workShifts, timeOffs } = req.body;
+    let finalServiceIds = serviceIds;
+    if (!finalServiceIds || finalServiceIds.length === 0) {
+      const tenantServices = await prisma.service.findMany({
+        where: { tenantId: req.tenantId }
+      });
+      finalServiceIds = tenantServices.map((s) => s.id);
+    }
     const staff = await prisma.staff.create({
       data: {
         name,
@@ -18057,7 +18064,7 @@ router3.post("/", requireAuth, async (req, res) => {
         status,
         tenantId: req.tenantId,
         services: {
-          create: (serviceIds || []).map((id) => ({
+          create: (finalServiceIds || []).map((id) => ({
             service: { connect: { id } }
           }))
         },
