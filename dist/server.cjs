@@ -23474,7 +23474,8 @@ import_dotenv.default.config();
 async function startServer() {
   const app = (0, import_express7.default)();
   const PORT = process.env.PORT || 49201;
-  app.use(import_express7.default.json());
+  app.use(import_express7.default.json({ limit: "10mb" }));
+  app.use(import_express7.default.urlencoded({ extended: true, limit: "10mb" }));
   app.use("/api/tenants", tenant_routes_default);
   app.use("/api/services", requireTenantId, service_routes_default);
   app.use("/api/staff", requireTenantId, staff_routes_default);
