@@ -22,5 +22,16 @@ export default defineConfig(({ mode }) => {
       // Giữ nguyên các cấu hình cũ của bạn
       hmr: process.env.DISABLE_HMR !== 'true',
     },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              return 'vendor';
+            }
+          }
+        }
+      }
+    }
   };
 });
