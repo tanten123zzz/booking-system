@@ -12,7 +12,6 @@ export function CustomerLayout() {
 
   return (
     <div className="min-h-screen bg-slate-100 font-sans flex items-center justify-center p-4">
-      <PortalSwitcher />
       {/* Phone-like Container Wrapper */}
       <div className="w-full max-w-[480px] bg-white rounded-[2rem] shadow-2xl overflow-hidden relative min-h-[800px] flex flex-col border-[6px] border-slate-800">
         

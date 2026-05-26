@@ -26,7 +26,6 @@ export function SuperAdminLayout() {
 
   return (
     <div className="h-screen w-full bg-[#0F0F12] text-slate-300 font-sans flex overflow-hidden">
-      <PortalSwitcher />
       {/* Sidebar */}
       <aside className="w-64 bg-[#111114] border-r border-[#1F1F23] flex flex-col">
         <div className="p-6 border-b border-[#1F1F23] flex items-center gap-3">
