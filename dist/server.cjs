@@ -17892,18 +17892,17 @@ router.put("/:id", requireAuth, async (req, res) => {
       phone,
       logoUrl
     });
-    const updateData = {
-      name,
-      slug,
-      brandColor,
-      status,
-      adminEmail,
-      location: location || "",
-      phone: phone || "",
-      logoUrl: logoUrl || "",
-      paymentMethods: paymentMethods ? JSON.stringify(paymentMethods) : void 0,
-      workingHours: req.body.workingHours ? JSON.stringify(req.body.workingHours) : void 0
-    };
+    const updateData = {};
+    if (name !== void 0) updateData.name = name;
+    if (slug !== void 0) updateData.slug = slug;
+    if (brandColor !== void 0) updateData.brandColor = brandColor;
+    if (status !== void 0) updateData.status = status;
+    if (adminEmail !== void 0) updateData.adminEmail = adminEmail;
+    if (location !== void 0) updateData.location = location;
+    if (phone !== void 0) updateData.phone = phone;
+    if (logoUrl !== void 0) updateData.logoUrl = logoUrl;
+    if (paymentMethods !== void 0) updateData.paymentMethods = JSON.stringify(paymentMethods);
+    if (req.body.workingHours !== void 0) updateData.workingHours = JSON.stringify(req.body.workingHours);
     if (password && !password.includes("\u2022") && !password.startsWith("$2b$")) {
       updateData.password = await bcryptjs_default.hash(password, 10);
     }

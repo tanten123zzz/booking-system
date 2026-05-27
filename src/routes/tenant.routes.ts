@@ -153,18 +153,17 @@ router.put('/:id', requireAuth, async (req, res) => {
       id: req.params.id, name, slug, brandColor, location, phone, logoUrl
     });
 
-    const updateData: any = { 
-      name, 
-      slug, 
-      brandColor, 
-      status, 
-      adminEmail,
-      location: location || "",
-      phone: phone || "",
-      logoUrl: logoUrl || "",
-      paymentMethods: paymentMethods ? JSON.stringify(paymentMethods) : undefined,
-      workingHours: req.body.workingHours ? JSON.stringify(req.body.workingHours) : undefined
-    };
+    const updateData: any = {};
+    if (name !== undefined) updateData.name = name;
+    if (slug !== undefined) updateData.slug = slug;
+    if (brandColor !== undefined) updateData.brandColor = brandColor;
+    if (status !== undefined) updateData.status = status;
+    if (adminEmail !== undefined) updateData.adminEmail = adminEmail;
+    if (location !== undefined) updateData.location = location;
+    if (phone !== undefined) updateData.phone = phone;
+    if (logoUrl !== undefined) updateData.logoUrl = logoUrl;
+    if (paymentMethods !== undefined) updateData.paymentMethods = JSON.stringify(paymentMethods);
+    if (req.body.workingHours !== undefined) updateData.workingHours = JSON.stringify(req.body.workingHours);
     
     // Nếu có đổi mật khẩu thì mã hóa lại (và không phải là placeholder)
     if (password && !password.includes('•') && !password.startsWith('$2b$')) {
